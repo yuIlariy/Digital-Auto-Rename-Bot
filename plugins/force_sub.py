@@ -55,12 +55,12 @@ async def handle_banned_user_status(bot, message):
         ).days > ban_status["ban_duration"]:
             await digital_botz.remove_ban(user_id)
         else:
-            return await message.reply_text("Sorry Sir, 😔 You are Banned!.. Please Contact - @DigitalBotz") 
+            return await message.reply_text("Sorry, 😔 You are Banned!.. Please Contact - @xspes") 
     await message.continue_propagation()
     
 async def forces_sub(client, message):
     buttons = [[InlineKeyboardButton(text="📢 Join Update Channel 📢", url=f"https://t.me/{Config.FORCE_SUB}")]] 
-    text = "**Sᴏʀʀy Dᴜᴅᴇ Yᴏᴜ'ʀᴇ Nᴏᴛ Jᴏɪɴᴇᴅ My Cʜᴀɴɴᴇʟ 😐. Sᴏ Pʟᴇᴀꜱᴇ Jᴏɪɴ Oᴜʀ Uᴩᴅᴀᴛᴇ Cʜᴀɴɴᴇʟ Tᴏ Cᴄᴏɴᴛɪɴᴜᴇ**"
+    text = "**Pʟᴇᴀꜱᴇ Jᴏɪɴ Oᴜʀ Uᴩᴅᴀᴛᴇ Cʜᴀɴɴᴇʟ Tᴏ Cᴄᴏɴᴛɪɴᴜᴇ**"
 
     try:
         user = await client.get_chat_member(Config.FORCE_SUB, message.from_user.id)
