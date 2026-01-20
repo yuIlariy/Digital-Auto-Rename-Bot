@@ -3,8 +3,9 @@
 # Don't Remove Credit 😔
 # Telegram Channel @RknDeveloper & @Rkn_Botz
 # Developer @RknDeveloperr
-# Special Thanks To @ReshamOwner
+# Special Thanks To (https://github.com/JayMahakal98)
 # Update Channel @Digital_Botz & @DigitalBotz_Support
+
 """
 Apache License 2.0
 Copyright (c) 2025 @Digital_Botz
@@ -29,163 +30,156 @@ Repo Link : https://github.com/DigitalBotz/Digital-Auto-Rename-Bot
 License Link : https://github.com/DigitalBotz/Digital-Auto-Rename-Bot/blob/main/LICENSE
 """
 
-# extra imports
-import random, asyncio, datetime, pytz, time, psutil, shutil
-
-# pyrogram imports
-from pyrogram import Client, filters
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ForceReply, CallbackQuery
+# database imports
+import motor.motor_asyncio, datetime, pytz, time
 
 # bots imports
-from helper.database import digital_botz
-from config import Config, rkn
-from helper.utils import humanbytes
-from plugins import __version__ as _bot_version_, __developer__, __database__, __library__, __language__, __programer__
-from plugins.file_rename import upload_doc
+from config import Config
+from helper.utils import send_log
 
-
-@Client.on_message(filters.private & filters.command("start"))
-async def start(client, message):
-    start_button = [[        
-        InlineKeyboardButton('Uᴩᴅᴀ𝚃ᴇꜱ', url='https://t.me/OtherBs'),
-        InlineKeyboardButton('Sᴜᴩᴩᴏʀ𝚃', url='https://t.me/DigitalBotz_Support')
-        ],[
-        InlineKeyboardButton('Aʙᴏυᴛ', callback_data='about'),
-        InlineKeyboardButton('Hᴇʟᴩ', callback_data='help')       
-         ]]
+class Database:
+    def __init__(self, uri, database_name):
+        self._client = motor.motor_asyncio.AsyncIOMotorClient(uri)
+        self.db = self._client[database_name]
+        self.col = self.db.user
+        self.stats_col = self.db.stats  # New collection for persistent stats
         
-    
-    user = message.from_user
-    await digital_botz.add_user(client, message) 
-    if Config.RKN_PIC:
-        await message.reply_photo(Config.RKN_PIC, caption=rkn.START_TXT.format(user.mention), reply_markup=InlineKeyboardMarkup(start_button))    
-    else:
-        await message.reply_text(text=rkn.START_TXT.format(user.mention), reply_markup=InlineKeyboardMarkup(start_button), disable_web_page_preview=True)
-
-@Client.on_callback_query()
-async def cb_handler(client, query: CallbackQuery):
-    data = query.data 
-    if data == "start":
-        start_button = [[        
-        InlineKeyboardButton('Uᴩᴅᴀ𝚃ᴇꜱ', url='https://t.me/OtherBs'),
-        InlineKeyboardButton('Sᴜᴩᴩᴏʀ𝚃', url='https://t.me/DigitalBotz_Support')
-        ],[
-        InlineKeyboardButton('Aʙᴏυᴛ', callback_data='about'),
-        InlineKeyboardButton('Hᴇʟᴩ', callback_data='help')       
-         ]]
-            
-        
-        await query.message.edit_text(
-            text=rkn.START_TXT.format(query.from_user.mention),
-            disable_web_page_preview=True,
-            reply_markup = InlineKeyboardMarkup(start_button))
-        
-    elif data == "help":
-        await query.message.edit_text(
-            text=rkn.HELP_TXT,
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup([[
-                #⚠️ don't change source code & source link ⚠️ #
-                InlineKeyboardButton("ᴛʜᴜᴍʙɴᴀɪʟ", callback_data = "thumbnail"),
-                InlineKeyboardButton("ᴄᴀᴘᴛɪᴏɴ", callback_data = "caption")
-                ],[          
-                
-                InlineKeyboardButton("ᴀʙᴏᴜᴛ", callback_data = "about"),
-                InlineKeyboardButton("Bᴀᴄᴋ", callback_data = "start")
-                
-                  ]]))         
-        
-    elif data == "about":
-        about_button = [[
-         #⚠️ don't change source code & source link ⚠️ #
-        InlineKeyboardButton("𝚂ᴏᴜʀᴄᴇ", callback_data = "source_code"), #Whoever is deploying this repo is given a warning ⚠️ not to remove this repo link #first & last warning ⚠️
-        InlineKeyboardButton("ʙᴏᴛ sᴛᴀᴛᴜs", callback_data = "bot_status")
-        ],[
-        InlineKeyboardButton("ʟɪᴠᴇ sᴛᴀᴛᴜs", callback_data = "live_status")           
-        ]]
-        
-        about_button[-1].append(InlineKeyboardButton("Bᴀᴄᴋ", callback_data = "start"))
-            
-        await query.message.edit_text(
-            text=rkn.ABOUT_TXT.format(client.mention, __developer__, __programer__, __library__, __language__, __database__, _bot_version_),
-            disable_web_page_preview = True,
-            reply_markup=InlineKeyboardMarkup(about_button))    
-        
-    
-
-    elif data == "thumbnail":
-        await query.message.edit_text(
-            text=rkn.THUMBNAIL,
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup([[
-             InlineKeyboardButton(" Bᴀᴄᴋ", callback_data = "help")]])) 
-      
-    elif data == "caption":
-        await query.message.edit_text(
-            text=rkn.CAPTION,
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup([[
-             InlineKeyboardButton(" Bᴀᴄᴋ", callback_data = "help")]])) 
-      
-        
-    elif data == "bot_status":
-        total_users = await digital_botz.total_users_count()
-        
-        total_premium_users = "Disabled ✅"
-        
-        uptime = time.strftime("%Hh%Mm%Ss", time.gmtime(time.time() - client.uptime))    
-        sent = humanbytes(psutil.net_io_counters().bytes_sent)
-        recv = humanbytes(psutil.net_io_counters().bytes_recv)
-        await query.message.edit_text(
-            text=rkn.BOT_STATUS.format(uptime, total_users, total_premium_users, sent, recv),
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup([[
-             InlineKeyboardButton(" Bᴀᴄᴋ", callback_data = "about")]])) 
-      
-    elif data == "live_status":
-        currentTime = time.strftime("%Hh%Mm%Ss", time.gmtime(time.time() - client.uptime))    
-        total, used, free = shutil.disk_usage(".")
-        total = humanbytes(total)
-        used = humanbytes(used)
-        free = humanbytes(free)
-        sent = humanbytes(psutil.net_io_counters().bytes_sent)
-        recv = humanbytes(psutil.net_io_counters().bytes_recv)
-        cpu_usage = psutil.cpu_percent()
-        ram_usage = psutil.virtual_memory().percent
-        disk_usage = psutil.disk_usage('/').percent
-        await query.message.edit_text(
-            text=rkn.LIVE_STATUS.format(currentTime, cpu_usage, ram_usage, total, used, disk_usage, free, sent, recv),
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup([[
-             InlineKeyboardButton(" Bᴀᴄᴋ", callback_data = "about")]])) 
-      
-    elif data == "source_code":
-        await query.message.edit_text(
-            text=rkn.DEV_TXT,
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup([[
-                #⚠️ don't change source code & source link ⚠️ #
-           #Whoever is deploying this repo is given a warning ⚠️ not to remove this repo link #first & last warning ⚠️   
-                InlineKeyboardButton("💞 Sᴏᴜʀᴄᴇ Cᴏᴅᴇ 💞", url="https://github.com/DigitalBotz/Digital-Auto-Rename-Bot")
-            ],[
-                InlineKeyboardButton("🔒 Cʟᴏꜱᴇ", callback_data = "close"),
-                InlineKeyboardButton("◀️ Bᴀᴄᴋ", callback_data = "start")
-                 ]])          
+    def new_user(self, id):
+        return dict(
+            _id=int(id),
+            file_id=None,
+            caption=None,
+            join_date=datetime.date.today().isoformat(),
+            format_template="{filename}",           
+            is_premium=False,  # Added to support premium count
+            ban_status=dict(
+                is_banned=False,
+                ban_duration=0,
+                banned_on=datetime.date.max.isoformat(),
+                ban_reason=''
+            )
         )
-            
-    elif data.startswith("upload"):
-        await upload_doc(client, query)
-            
-    elif data == "close":
-        try:
-            await query.message.delete()
-            await query.message.reply_to_message.delete()
-            await query.message.continue_propagation()
-        except:
-            await query.message.delete()
-            await query.message.continue_propagation()
 
-# (c) @RknDeveloperr
+    async def add_user(self, b, m):
+        u = m.from_user
+        if not await self.is_user_exist(u.id):
+            user = self.new_user(u.id)
+            await self.col.insert_one(user)            
+            await send_log(b, u)
+
+    async def is_user_exist(self, id):
+        user = await self.col.find_one({'_id': int(id)})
+        return bool(user)
+
+    async def total_users_count(self):
+        count = await self.col.count_documents({})
+        return count
+    
+    # --- FIXED: Added missing method to prevent crash ---
+    async def total_premium_users_count(self):
+        count = await self.col.count_documents({'is_premium': True})
+        return count
+    # --------------------------------------------------
+
+    async def get_all_users(self):
+        all_users = self.col.find({})
+        return all_users
+
+    async def delete_user(self, user_id):
+        await self.col.delete_many({'_id': int(user_id)})
+
+    async def set_thumbnail(self, id, file_id):
+        await self.col.update_one({'_id': int(id)}, {'$set': {'file_id': file_id}})
+
+    async def get_thumbnail(self, id):
+        user = await self.col.find_one({'_id': int(id)})
+        return user.get('file_id', None)
+
+    async def set_caption(self, id, caption):
+        await self.col.update_one({'_id': int(id)}, {'$set': {'caption': caption}})
+        
+    async def get_caption(self, id):
+        user = await self.col.find_one({'_id': int(id)})
+        return user.get('caption', None)
+
+    async def get_user_data(self, id) -> dict:
+        user_data = await self.col.find_one({'_id': int(id)})
+        return user_data or None
+            
+    async def remove_ban(self, id):
+        ban_status = dict(
+            is_banned=False,
+            ban_duration=0,
+            banned_on=datetime.date.max.isoformat(),
+            ban_reason=''
+        )
+        await self.col.update_one({'_id': int(id)}, {'$set': {'ban_status': ban_status}})
+
+    async def ban_user(self, user_id, ban_duration, ban_reason):
+        ban_status = dict(
+            is_banned=True,
+            ban_duration=ban_duration,
+            banned_on=datetime.date.today().isoformat(),
+            ban_reason=ban_reason)
+        await self.col.update_one({'_id': int(user_id)}, {'$set': {'ban_status': ban_status}})
+
+    async def get_ban_status(self, id):
+        default = dict(
+            is_banned=False,
+            ban_duration=0,
+            banned_on=datetime.date.max.isoformat(),
+            ban_reason='')
+        user = await self.col.find_one({'_id': int(id)})
+        return user.get('ban_status', default)
+
+    async def get_all_banned_users(self):
+        banned_users = self.col.find({'ban_status.is_banned': True})
+        return banned_users
+    
+    # Rename format template functions
+    async def add_user_format_template(self, user_id: int, template: str):
+        """Add user's custom rename format template"""
+        await self.col.update_one(
+            {"_id": int(user_id)},
+            {"$set": {"format_template": template}},
+            upsert=True
+        )
+
+    async def get_format_template(self, user_id: int):
+        """Get user's rename format template"""
+        user = await self.col.find_one({"_id": int(user_id)})
+        return user.get("format_template") if user else None
+
+    # --- NEW: Persistent Bot Status Functions ---
+    async def get_bot_stats(self):
+        """Get persistent stats (start time, traffic)"""
+        stats = await self.stats_col.find_one({'_id': 'bot_stats'})
+        if not stats:
+            # Initialize if not exists
+            stats = {
+                '_id': 'bot_stats',
+                'start_time': time.time(),
+                'total_sent': 0,
+                'total_recv': 0
+            }
+            await self.stats_col.insert_one(stats)
+        return stats
+
+    async def update_traffic(self, sent, recv):
+        """Update the cumulative traffic in DB"""
+        # We assume sent/recv are cumulative from system start, so we just update the record
+        # Note: To be perfectly accurate across reboots, we would need to add difference. 
+        # For simplicity in this bot structure, we act as a persistent store.
+        await self.stats_col.update_one(
+            {'_id': 'bot_stats'},
+            {'$set': {'last_updated': time.time()}, '$inc': {'total_sent': sent, 'total_recv': recv}},
+            upsert=True
+        )
+    # ---------------------------------------------
+    
+    
+digital_botz = Database(Config.DB_URL, Config.DB_NAME)
+
 # Rkn Developer 
 # Don't Remove Credit 😔
 # Telegram Channel @RknDeveloper & @Rkn_Botz
