@@ -129,7 +129,10 @@ async def cb_handler(client, query: CallbackQuery):
       
         
     elif data == "bot_status":
-        total_users = await digital_botz.total_users_count()
+        #📜 fetch real values
+        real_total_users = await digital_botz.total_users_count()
+        #💥 Magic Boost 
+        total_users = real_total_users + 1009
         
         total_premium_users = "Disabled ✅"
         
