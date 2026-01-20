@@ -27,7 +27,7 @@ License Link : https://github.com/DigitalBotz/Digital-Auto-Rename-Bot/blob/main/
 
 
 __name__ = "Digital-Auto-Rename-Bot"
-__version__ = "0.0.1"
+__version__ = "3.1.0"
 __license__ = " Apache License, Version 2.0"
 __copyright__ = "Copyright (C) 2025-present Digital Botz <https://github.com/DigitalBotz>"
 __programer__ = "<a href=https://github.com/DigitalBotz/Digital-Auto-Rename-Bot>Digital-Auto-Rename-Bot</a>"
