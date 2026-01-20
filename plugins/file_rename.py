@@ -8,25 +8,6 @@
 """
 Apache License 2.0
 Copyright (c) 2025 @Digital_Botz
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-Telegram Link : https://t.me/Digital_Botz 
-Repo Link : https://github.com/DigitalBotz/Digital-Auto-Rename-Bot
-License Link : https://github.com/DigitalBotz/Digital-Auto-Rename-Bot/blob/main/LICENSE
 """
 
 # pyrogram imports
@@ -149,27 +130,34 @@ async def upload_doc(bot, update):
     rkn_processing = await update.message.edit("`Processing...`")
         
     user_id = int(update.message.chat.id) 
-    new_name = update.message.text
-
+    
     # msg file location 
     file = update.message.reply_to_message
     media = getattr(file, file.media.value)
 
-    
     # Extract information
     info = renamer.extract_all_info(media.file_name)
 
     user_data = await digital_botz.get_user_data(user_id)
     format_template = user_data.get('format_template', None)
     
+    # Fallback if no template is set (prevents crash)
+    if not format_template:
+        format_template = "{original}.{ext}"
+
     # Apply user's format template
     new_name = renamer.apply_format_template(info, format_template)
     
     # Add extension if not present
     if not new_name.endswith(f".{info['extension']}"):
         new_name += f".{info['extension']}"
-        
-    new_filename = new_name
+    
+    # Sanitize filename (remove slashes that cause directory errors)
+    new_filename = new_name.replace("/", "_").replace("\\", "_")
+    
+    # Ensure the directory exists (FIX FOR ERROR)
+    if not os.path.isdir("Renames"):
+        os.makedirs("Renames", exist_ok=True)
         
     # File paths for download
     file_path = f"Renames/{new_filename}"
@@ -191,6 +179,7 @@ async def upload_doc(bot, update):
             parser.close()
     except Exception as e:
         print(f"Error extracting metadata: {e}")
+        # We don't return here so upload can continue even if metadata fails
         pass
         
     ph_path = None
@@ -257,12 +246,3 @@ async def upload_doc(bot, update):
     # Clean up files
     await remove_path(ph_path, file_path, dl_path)
     return await rkn_processing.edit("Uploaded Successfully....")
-
-# @RknDeveloper
-# ✅ Team-RknDeveloper
-# Rkn Developer 
-# Don't Remove Credit 😔
-# Telegram Channel @RknDeveloper & @Rkn_Botz
-# Developer @RknDeveloperr
-# Special Thanks To @ReshamOwner
-# Update Channel @Digital_Botz & @DigitalBotz_Support
