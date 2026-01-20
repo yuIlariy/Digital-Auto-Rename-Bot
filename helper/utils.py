@@ -77,7 +77,7 @@ async def progress_for_pyrogram(current, total, ud_type, message, start):
 
 ┃    🔋 ꜱᴛᴀᴛᴜꜱ: {0}%
 
-┃    {3} ꜱᴘᴇᴇᴅ: {5}
+┃    {3} ꜱᴘᴇᴇᴅ: {5}/s
 
 ┃    ⏰ ᴇᴛᴀ: {4}
 
