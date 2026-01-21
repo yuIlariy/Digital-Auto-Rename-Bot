@@ -102,10 +102,10 @@ Send a file to get started.
 ✨ <i>Where files transform with magical precision!</i>"""
 
     HELP_TXT = """
-<b>•></b> /start Tʜᴇ Bᴏᴛ.
+<b>•></b> 𝚂𝚎𝚗𝚍 /autorename 𝙵𝚘𝚛 𝚊𝚞𝚝𝚘 𝚁𝚎𝚗𝚊𝚖𝚎 𝚑𝚎𝚕𝚙 𝙰𝚗𝚍 𝚜𝚎𝚝𝚝𝚒𝚗𝚐 𝚊𝚞𝚝𝚘 𝚛𝚎𝚗𝚊𝚖𝚎.
 
 ✏️ <b><u>Hᴏᴡ Tᴏ Rᴇɴᴀᴍᴇ A Fɪʟᴇ</u></b>
-<b>•></b> Sᴇɴᴅ Aɴy Fɪʟᴇ Aɴᴅ Tyᴩᴇ Nᴇᴡ Fɪʟᴇ Nɴᴀᴍᴇ \nAɴᴅ Aᴇʟᴇᴄᴛ Tʜᴇ Fᴏʀᴍᴀᴛ [ document, video, audio ].           
+<b>•></b> Sᴇɴᴅ Aɴy Fɪʟᴇ\nAɴᴅ 𝚂ᴇʟᴇᴄᴛ Tʜᴇ Fᴏʀᴍᴀᴛ [ document, video, audio ].           
 ℹ️ 𝗔𝗻𝘆 𝗢𝘁𝗵𝗲𝗿 𝗛𝗲𝗹𝗽 𝗖𝗼𝗻𝘁𝗮𝗰𝘁 :- <a href=https://t.me/DigitalBotz_Support>𝑺𝑼𝑷𝑷𝑶𝑹𝑻 𝑮𝑹𝑶𝑼𝑷</a>
 """
 
