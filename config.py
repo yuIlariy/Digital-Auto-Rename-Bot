@@ -81,7 +81,6 @@ Send a file to get started.
 • Custom captions  
 • Convert videos & documents  
 • Customize thumbnails  
-• Modify metadata  
 
 🌟 <i>Lightning-fast with premium enchantments!</i>
 
