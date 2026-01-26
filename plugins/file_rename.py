@@ -104,7 +104,7 @@ async def rename_start(client, message):
                  f"🗃️ ᴏʟᴅ ꜰɪʟᴇ ɴᴀᴍᴇ: `{filename}`\n\n"
                  f"🏷️ ᴇxᴛᴇɴꜱɪᴏɴ: `{extension_type.upper()}`\n"
                  f"💾 ꜰɪʟᴇ ꜱɪᴢᴇ: `{filesize}`\n"
-                 f"🧬 ᴍɪᴍᴇ ᴛʏᴇᴩ: `{mime_type}`\n"
+                 f"🧬 ᴍɪᴍᴇ ᴛʏᴇᴩ: `{mime_type}`\n\n"
                  f"🆔 ᴅᴄ ɪᴅ: `{dcid}`....__**",        
             reply_to_message_id=message.id,
             reply_markup=InlineKeyboardMarkup(button)
