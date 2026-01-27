@@ -6,25 +6,6 @@
 """
 Apache License 2.0
 Copyright (c) 2025 @Digital_Botz
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-Telegram Link : https://t.me/Digital_Botz 
-Repo Link : https://github.com/DigitalBotz/Digital-Auto-Rename-Bot
-License Link : https://github.com/DigitalBotz/Digital-Auto-Rename-Bot/blob/main/LICENSE
 """
 
 import re
@@ -36,9 +17,6 @@ from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from datetime import datetime
 import asyncio
 from helper.database import digital_botz
-import re
-from pathlib import Path
-from typing import Dict
 
 class EnhancedAutoRenamer:
     def __init__(self):
@@ -66,62 +44,89 @@ class EnhancedAutoRenamer:
         # Clean filename for parsing
         clean_name = filename.replace('_', ' ').replace('.', ' ')
         
-        # Title extraction (before year or quality)
-        title_match = re.search(r'^([A-Za-z0-9\s\.\-]+?)(?=\s*[\(\[]?\d{4}[\)\]]?|\s*\d{3,4}p|\s*[Ss]\d)', clean_name, re.IGNORECASE)
-        if title_match:
-            info['title'] = self._clean_title(title_match.group(1))
-        
-        # Year extraction
+        # 1. Year extraction (Extract early to prevent confusion with episodes)
         year_match = re.search(r'[\(\[]?(\d{4})[\)\]]?', clean_name)
         if year_match:
-            info['year'] = year_match.group(1)
+            year_val = int(year_match.group(1))
+            if 1900 < year_val < 2100:
+                info['year'] = str(year_val)
         
-        # Season and Episode extraction (multiple patterns)
-        # Pattern 1: S01E01 or S01EP01
-        s_e_match = re.search(r'[Ss](\d{1,2})[EePp]?(\d{1,3})', clean_name)
+        # 2. Season and Episode extraction
+        
+        # Pattern 1: Strict (S01E01, S1E1)
+        s_e_match = re.search(r'[Ss](\d{1,2})\s*[EePp]?(\d{1,4})', clean_name)
         if s_e_match:
             info['season'] = f"S{s_e_match.group(1).zfill(2)}"
             info['episode'] = f"E{s_e_match.group(2).zfill(2)}"
         
-        # Pattern 2: Season 1 Episode 1
+        # Pattern 2: Verbose (Season 1 Episode 1)
         if not info['season']:
             season_match = re.search(r'[Ss]eason\s*(\d{1,2})', clean_name, re.IGNORECASE)
-            episode_match = re.search(r'[Ee]pisode\s*(\d{1,3})', clean_name, re.IGNORECASE)
+            episode_match = re.search(r'[Ee]pisode\s*(\d{1,4})', clean_name, re.IGNORECASE)
             if season_match:
                 info['season'] = f"S{season_match.group(1).zfill(2)}"
             if episode_match:
                 info['episode'] = f"E{episode_match.group(1).zfill(2)}"
+
+        # Pattern 3: Loose Sequence (Show - 01, Show Ep 01, [01])
+        if not info['episode']:
+            # Look for hyphens or "Ep" followed by number: " - 01", " Ep 01"
+            loose_match = re.search(r'(?:\s-|Ep|E|Episode|^)\s*(\d{1,4})(?=\s|$|\.)', clean_name, re.IGNORECASE)
+            # Look for brackets: [01] or (01)
+            bracket_match = re.search(r'[\[\(]\s*(\d{1,4})\s*[\]\)]', clean_name)
+
+            found_ep = None
+            if loose_match:
+                found_ep = loose_match.group(1)
+            elif bracket_match:
+                found_ep = bracket_match.group(1)
+            
+            # Validation: Ensure the number found isn't the Year
+            if found_ep and found_ep != info['year']:
+                info['episode'] = f"E{found_ep.zfill(2)}"
+
+        # REMOVED: Default Season Logic (Auto-Add S01)
+        # If no season is found, info['season'] remains empty string ''
+
+        # 4. Title extraction
+        # Try to grab everything before the sequence/year/quality patterns
+        title_match = re.search(r'^([A-Za-z0-9\s\.\-\']+?)(?=\s*[\(\[]?\d{4}[\)\]]?|\s*S\d|\s*E\d|\s*\-\s*\d)', filename.replace('.', ' ').replace('_', ' '), re.IGNORECASE)
+        if title_match:
+            info['title'] = self._clean_title(title_match.group(1))
+        else:
+            # Fallback title (if regex fails, use cleaned original name)
+            info['title'] = self._clean_title(info['original_name'])
         
-        # Quality extraction
+        # 5. Quality extraction
         quality_match = re.search(r'(\d{3,4}p|4[Kk]|UHD|HD|SD|HDRip|WEBRip|BluRay)', clean_name, re.IGNORECASE)
         if quality_match:
             info['quality'] = quality_match.group(1).upper()
         
-        # Video codec
+        # 6. Video codec
         codec_match = re.search(r'(x264|x265|HEVC|H\.264|H\.265|AVC)', clean_name, re.IGNORECASE)
         if codec_match:
             info['video_codec'] = codec_match.group(1).lower()
         
-        # Audio codec
+        # 7. Audio codec
         audio_match = re.search(r'(DD\+?5\.1|DDP?5\.1|DD5\.1|DD2\.0|AAC|AC3|DTS)', clean_name, re.IGNORECASE)
         if audio_match:
             info['audio_codec'] = audio_match.group(1).upper()
         
-        # Language detection
-        languages = ['Hindi', 'English', 'Malayalam', 'Tamil', 'Telugu', 'Kannada', 'Dual']
+        # 8. Language detection
+        languages = ['Hindi', 'English', 'Malayalam', 'Tamil', 'Telugu', 'Kannada', 'Dual', 'Multi']
         for lang in languages:
             if re.search(lang, clean_name, re.IGNORECASE):
                 info['language'] = lang
                 break
         
-        # Source type
+        # 9. Source type
         sources = ['BluRay', 'WEBRip', 'WEB-DL', 'HDRip', 'DVDRip', 'TVRip', 'AMZN', 'Netflix', 'Hotstar']
         for source in sources:
             if re.search(source, clean_name, re.IGNORECASE):
                 info['source'] = source
                 break
         
-        # Bit depth and HDR
+        # 10. Bit depth and HDR
         if '10bit' in clean_name.lower():
             info['bit_depth'] = '10bit'
         if 'hdr' in clean_name.lower():
@@ -131,7 +136,7 @@ class EnhancedAutoRenamer:
     
     def _clean_title(self, title: str) -> str:
         """Clean and format title"""
-        # Remove common release group tags
+        # Remove common release group tags and brackets
         title = re.sub(r'[@#~\[\]\{\}\(\)]', '', title)
         # Replace multiple spaces
         title = re.sub(r'\s+', ' ', title)
@@ -162,10 +167,10 @@ class EnhancedAutoRenamer:
         for placeholder, value in placeholders.items():
             template = template.replace(placeholder, value)
         
-        # Clean up any empty parentheses or brackets
-        template = re.sub(r'\(\s*\)', '', template)  # Remove empty parentheses
-        template = re.sub(r'\[\s*\]', '', template)  # Remove empty brackets
-        template = re.sub(r'\s+', ' ', template)  # Remove extra spaces
+        # Clean up any empty parentheses or brackets if data was missing
+        template = re.sub(r'\(\s*\)', '', template)
+        template = re.sub(r'\[\s*\]', '', template)
+        template = re.sub(r'\s+', ' ', template)
         template = template.strip()
         
         return template
@@ -252,9 +257,3 @@ async def format_callback(client, callback_query):
             f"✅ Format set to **{data.split('_')[1].title()}**!\n\n`{formats[data]}`"
         )
     await callback_query.answer()
-
-
-# Rkn Developer 
-# Don't Remove Credit 😔
-# Telegram Channel @RknDeveloper & @Rkn_Botz
-# Developer @RknDeveloperr
