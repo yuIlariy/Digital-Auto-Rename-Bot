@@ -22,8 +22,8 @@ from helper.database import digital_botz
 from config import Config, rkn
 from helper.utils import humanbytes
 from plugins import __version__ as _bot_version_, __developer__, __database__, __library__, __language__, __programer__
-from plugins.file_rename import upload_doc
 
+# NOTE: 'upload_doc' import removed as it is no longer needed
 
 # --- Helper Function for Uptime ---
 def get_uptime(start_time):
@@ -193,9 +193,6 @@ async def cb_handler(client, query: CallbackQuery):
                 InlineKeyboardButton("◀️ Bᴀᴄᴋ", callback_data = "start")
                  ]])          
         )
-            
-    elif data.startswith("upload"):
-        await upload_doc(client, query)
             
     elif data == "close":
         try:
