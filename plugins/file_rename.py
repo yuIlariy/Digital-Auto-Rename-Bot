@@ -41,9 +41,7 @@ app = Client("4gb_FileRenameBot", api_id=Config.API_ID, api_hash=Config.API_HASH
 renamer = EnhancedAutoRenamer()
 
 # --- QUEUE VARIABLES ---
-# Structure: { user_id: [message1, message2, ...] }
 USER_QUEUE = {}
-# Structure: { user_id: True/False }
 IS_RUNNING = {}
 # -----------------------
 
@@ -51,20 +49,18 @@ IS_RUNNING = {}
 async def rename_start(client, message):
     user_id = message.from_user.id
 
-    # 1. Initialize Queue for User if not exists
+    # 1. Initialize Queue
     if user_id not in USER_QUEUE:
         USER_QUEUE[user_id] = []
     
-    # 2. Add Message to Queue
+    # 2. Add to Queue
     USER_QUEUE[user_id].append(message)
     
-    # 3. Check if a worker is already running for this user
+    # 3. Check if Running
     if user_id in IS_RUNNING and IS_RUNNING[user_id]:
-        # Optional: Notify user that file is queued (avoiding spam)
-        # await message.reply_text("⏳ Added to queue...", quote=True)
         return
 
-    # 4. Start the Worker
+    # 4. Start Worker
     IS_RUNNING[user_id] = True
     await process_queue(client, user_id)
 
@@ -72,73 +68,51 @@ async def process_queue(client, user_id):
     try:
         while user_id in USER_QUEUE and USER_QUEUE[user_id]:
             # --- SORTING LOGIC ---
-            # Sort the pending messages by Season THEN Episode
             def get_sort_key(msg):
                 try:
-                    # Get filename from the message media
                     file_val = getattr(msg, msg.media.value)
                     fname = file_val.file_name or ""
-                    
-                    # Extract info using your AutoRenamer logic
                     info = renamer.extract_all_info(fname)
                     
-                    # Parse Season (Default to 0 if not found)
+                    # Parse Season
                     season = 0
                     if info.get('season'):
-                        # Removes "S" and converts to int (e.g. "S01" -> 1)
                         season = int(info['season'].upper().replace("S", ""))
                     
-                    # Parse Episode (Default to 0 if not found)
+                    # Parse Episode
                     episode = 0
                     if info.get('episode'):
-                        # Removes "E" and converts to int (e.g. "E05" -> 5)
                         episode = int(info['episode'].upper().replace("E", ""))
                         
-                    # Return tuple: (Season Number, Episode Number)
-                    # This ensures S01E01 comes before S01E02, and S01 comes before S02
                     return (season, episode)
                 except:
-                    # If parsing fails, push to end of queue
                     return (999, 999)
 
-            # Apply the sort to the user's queue
+            # Sort Queue
             USER_QUEUE[user_id].sort(key=get_sort_key)
             # ---------------------
 
-            # Take the FIRST message (which is now the lowest Season/Episode)
+            # Process First Item
             message = USER_QUEUE[user_id].pop(0)
-
-            # Process this single file
             await process_file_logic(client, message)
-            
-            # Wait a moment before starting the next file to prevent floodwaits
             await asyncio.sleep(2)
 
     except Exception as e:
         print(f"Queue Error: {e}")
     finally:
-        # Mark worker as finished when queue is empty
         IS_RUNNING[user_id] = False
-        # Clean up empty list key
         if user_id in USER_QUEUE and not USER_QUEUE[user_id]:
             del USER_QUEUE[user_id]
 
 async def process_file_logic(client, message):
-    """
-    Core renaming logic. This runs for ONE file at a time.
-    """
     try:
-        # 1. Check File Size for Non-Premium/Non-Session users
         rkn_file = getattr(message, message.media.value)
         if not Config.STRING_SESSION:
             if rkn_file.file_size > 2000 * 1024 * 1024:
                 await message.reply_text("Sᴏʀʀy Bʀᴏ Tʜɪꜱ Bᴏᴛ Iꜱ Dᴏᴇꜱɴ'ᴛ Sᴜᴩᴩᴏʀᴛ Uᴩʟᴏᴀᴅɪɴɢ Fɪʟᴇꜱ Bɪɢɢᴇʀ Tʜᴀɴ 2Gʙ+")
                 return
 
-        # 2. Gather File Info & Emojis
-        filename = rkn_file.file_name
-        if not filename:
-            filename = "unknown_file"
+        filename = rkn_file.file_name or "unknown_file"
             
         if not "." in filename:
             if "." in filename:
@@ -152,7 +126,6 @@ async def process_file_logic(client, message):
         dcid = FileId.decode(rkn_file.file_id).dc_id
         extension_type = mime_type.split('/')[0]
 
-        # --- EMOJI LOGIC ---
         file_ext = filename.split('.')[-1].lower() if "." in filename else "unknown"
 
         FILE_TYPE_EMOJIS = {
@@ -169,9 +142,7 @@ async def process_file_logic(client, message):
             "png": "🖼️", "gif": "🌀", "svg": "📐", "ttf": "🔤", "otf": "🔤", "woff": "🔤", "eot": "🔤"
         }
         emoji = EXTENSION_EMOJIS.get(file_ext) or FILE_TYPE_EMOJIS.get(extension_type, FILE_TYPE_EMOJIS["default"])
-        # -------------------
 
-        # 3. Send Initial Status Message
         rkn_processing = await message.reply_text(
             text=f"**🔄 Aᴜᴛᴏ-Rᴇɴᴀᴍᴇ Sᴛᴀʀᴛᴇᴅ...**\n\n"
                  f"**__{emoji} Fɪʟᴇ Iɴꜰᴏ:__**\n"
@@ -182,8 +153,6 @@ async def process_file_logic(client, message):
         )
 
         user_id = message.from_user.id
-        
-        # 4. Generate New Filename
         info = renamer.extract_all_info(filename)
         user_data = await digital_botz.get_user_data(user_id)
         format_template = user_data.get('format_template', None)
@@ -198,13 +167,11 @@ async def process_file_logic(client, message):
         
         new_filename = new_name.replace("/", "_").replace("\\", "_")
         
-        # 5. Create Directory & Paths
         if not os.path.isdir("Renames"):
             os.makedirs("Renames", exist_ok=True)
             
         file_path = f"Renames/{new_filename}"
         
-        # 6. Download
         await rkn_processing.edit(f"📥 **Dᴏᴡɴʟᴏᴀᴅɪɴɢ:**\n`{new_filename}`")
         try:            
             dl_path = await client.download_media(
@@ -217,7 +184,6 @@ async def process_file_logic(client, message):
             await rkn_processing.edit(f"⚠️ Download Error: {e}")
             return
         
-        # 7. Extract Duration
         duration = 0
         try:
             parser = createParser(file_path)
@@ -229,7 +195,6 @@ async def process_file_logic(client, message):
         except:
             pass
             
-        # 8. Handle Thumbnail & Caption
         ph_path = None
         c_caption = user_data.get('caption', None)
         c_thumb = user_data.get('file_id', None)
@@ -258,7 +223,6 @@ async def process_file_logic(client, message):
             except Exception as e:
                 ph_path = None
 
-        # 9. Determine Upload Type
         upload_type = "document"
         if message.media == MessageMediaType.VIDEO:
             upload_type = "video"
@@ -267,7 +231,6 @@ async def process_file_logic(client, message):
         
         await rkn_processing.edit("📤 **Uᴩʟᴏᴀᴅɪɴɢ...**")
         
-        # 10. Upload Logic
         if rkn_file.file_size > 2000 * 1024 * 1024:
             filw, error = await upload_files(
                 app, Config.LOG_CHANNEL, upload_type, file_path, 
@@ -292,14 +255,12 @@ async def process_file_logic(client, message):
                 await rkn_processing.edit(f"⚠️ Upload Error: {error}")
                 return
 
-        # 11. Cleanup & Success
         await remove_path(ph_path, file_path, dl_path)
         await rkn_processing.edit("✅ **Uᴩʟᴏᴀᴅᴇᴅ Sᴜᴄᴄᴇꜱꜱꜰᴜʟʟy!**")
         await asyncio.sleep(2) 
         await rkn_processing.delete()
 
     except Exception as e:
-        # Cleanup in case of crash
         print(f"Error in process_file_logic: {e}")
         try:
             if 'ph_path' in locals(): await remove_path(ph_path)
@@ -309,9 +270,6 @@ async def process_file_logic(client, message):
             pass
 
 async def upload_files(bot, sender_id, upload_type, file_path, ph_path, caption, duration, rkn_processing):
-    """
-    Unified function to upload files based on type
-    """
     try:
         if not os.path.exists(file_path):
             return None, f"File not found: {file_path}"
