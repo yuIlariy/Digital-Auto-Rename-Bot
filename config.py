@@ -1,34 +1,3 @@
-# (c) @RknDeveloperr
-# Rkn Developer 
-# Don't Remove Credit 😔
-# Telegram Channel @RknDeveloper & @Rkn_Botz
-# Developer @RknDeveloperr
-# Special Thanks To @ReshamOwner
-# Update Channel @Digital_Botz & @DigitalBotz_Support
-"""
-Apache License 2.0
-Copyright (c) 2025 @Digital_Botz
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-Telegram Link : https://t.me/Digital_Botz 
-Repo Link : https://github.com/DigitalBotz/Digital-Auto-Rename-Bot
-License Link : https://github.com/DigitalBotz/Digital-Auto-Rename-Bot/blob/main/LICENSE
-"""
-
 import re, os, time
 id_pattern = re.compile(r'^.\d+$') 
 
@@ -131,10 +100,10 @@ Exᴀᴍᴩʟᴇ:- `/set_caption 📕 Fɪʟᴇ Nᴀᴍᴇ: {filename}
     BOT_STATUS = """
 ⚡️ ʙᴏᴛ sᴛᴀᴛᴜs ⚡️
 
-⌚️ ʙᴏᴛ ᴜᴩᴛɪᴍᴇ: `{}`
+⌚️ ʙᴏᴛ ᴜᴩɪᴍᴇ: `{}`
 👭 ᴛᴏᴛᴀʟ ᴜsᴇʀꜱ: `{}`
 💸 ᴛᴏᴛᴀʟ ᴘʀᴇᴍɪᴜᴍ ᴜsᴇʀs: `{}`
-֍ ᴜᴘʟᴏᴀᴅ: `{}`
+֍ ᴜᴘʟᴏᴀɪᴏ: `{}`
 ⊙ ᴅᴏᴡɴʟᴏᴀᴅ: `{}`
 """
     LIVE_STATUS = """
@@ -146,7 +115,7 @@ Exᴀᴍᴩʟᴇ:- `/set_caption 📕 Fɪʟᴇ Nᴀᴍᴇ: {filename}
 💾 ᴛᴏᴛᴀʟ ᴅɪsᴋ: `{}`
 📉 ᴜsᴇᴅ sᴘᴀᴄᴇ: `{} {}%`
 📁 ғʀᴇᴇ sᴘᴀᴄᴇ: `{}`
-📤 ᴜᴘʟᴏᴀᴅ: `{}`
+📤 ᴜᴘᴏ: `{}`
 📥 ᴅᴏᴡɴʟᴏᴀᴅ: `{}`
 🧩 V𝟹.𝟷.𝟶 [STABLE]
 """
@@ -164,26 +133,15 @@ Exᴀᴍᴩʟᴇ:- `/set_caption 📕 Fɪʟᴇ Nᴀᴍᴇ: {filename}
 • ❣️ <a href=https://github.com/JayMahakal98>Jay Mahakal</a> """
     # ⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️
 
-    
-    
-    RKN_PROGRESS = """<b>
-╭━━━━❰ᴘʀᴏɢʀᴇss ʙᴀʀ❱━➣
+    # Premium plans list
+    UPGRADE_PREMIUM = """
+•⪼ ★𝘗𝘳𝘭𝘢𝘯𝘴    -  ⏳𝘋𝘢𝘵𝘦 - 💸𝘗𝘳𝘪𝘤𝘦  
+•⪼ 🥉𝘉𝘳𝘰𝘯𝘻𝘦   -   3𝘥𝘢𝘺𝘴   -   $0.47  
+•⪼ 🥈𝘚𝘪𝘭𝘷𝘦𝘳   -   7𝘥𝘢𝘺𝘴   -   $0.71  
+•⪼ 🥇𝘎𝘰𝘭𝘥    -  15𝘥𝘢𝘺𝘴  -   $1.15  
+•⪼ 🏆𝘗𝘭𝘢𝘵𝘪𝘯𝘶𝘮 -  1𝘮𝘰𝘯𝘵𝘩  -   $2.11  
+•⪼ 💎𝘋𝘪𝘢𝘮𝘰𝘯𝘥  -  2𝘮𝘰𝘯𝘵𝘩  -   $3.00  
 
-┃    🗂️ ᴄᴏᴍᴘʟᴇᴛᴇᴅ: {1}
-
-┃    📦 ᴛᴏᴛᴀʟ ꜱɪᴢᴇ: {2}
-
-┃    🔋 ꜱᴛᴀᴛᴜꜱ: {0}%
-
-┃    {3} ꜱᴘᴇᴇᴅ: {5}/s
-
-┃    ⏰ ᴇᴛᴀ: {4}
-
-╰━━━━━━━━━━━━━━━━➣
-</b>"""
-
-# Rkn Developer 
-# Don't Remove Credit 😔
-# Telegram Channel @RknDeveloper & @Rkn_Botz
-# Developer @RknDeveloperr
-# Update Channel @Digital_Botz & @DigitalBotz_Support
+🚀 Daily Upload Limit: Unlimited  
+🎁 Discount All Plans: $0.11  
+"""
